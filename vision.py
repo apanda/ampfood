@@ -1,6 +1,8 @@
 '''
 VM and KNearest digit recognition.
 
+Borrowed from the sample file here: https://github.com/Itseez/opencv/blob/master/samples/python2/digits.py and modified for our purposes.
+
 Sample loads a dataset of handwritten digits from 'digits.png'.
 Then it trains a SVM and KNearest classifiers on it and evaluates
 their accuracy.
@@ -42,6 +44,7 @@ def split2d(img, cell_size, flatten=True):
     cells = [np.hsplit(row, w//sx) for row in np.vsplit(img, h//sy)]
     cells = np.array(cells)
     if flatten:
+        # keeps the original first dimension
         cells = cells.reshape(-1, sy, sx)
     return cells
 
