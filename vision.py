@@ -28,21 +28,20 @@ from multiprocessing.pool import ThreadPool
 
 import cv2
 
+import itertools as it
 import numpy as np
 from numpy.linalg import norm
 import os
+import re
 
-# local modules
-from common import clock, mosaic
+# TODO: ok this is kind of a lie -- just using 90% for training and 10% for testing.
+# For final thing, might want to just spot check a couple of interesting ones for the
+# report.
+TRAINING_DIR = '/mnt/images/images/training'
+LABELS = '/mnt/images/images/labeled_upto1386267400'
 
-SZ = 20 # size of each digit is SZ x SZ
-CLASS_N = 10
-DIGITS_FN = 'data/digits.png'
-TRAINING_DIR = '/mnt/images/training'
-LABELS = '/mnt/images/labeled_uptp1386267400'
-
-def load_training(training_dir):
-    print 'loading files from "%s" ...' % training_dir
+def load_training():
+    print 'loading files from "%s" ...' % TRAINING_DIR
     filenames = os.listdir(TRAINING_DIR)
 
     full_filenames = [os.path.join(TRAINING_DIR, f) for f in filenames]
@@ -58,26 +57,49 @@ def load_training(training_dir):
         if match:
             start = match.group(1)
             end = match.group(2)
-            for i in range(start, end + 1):
+            for i in range(int(start), int(end) + 1):
                 positive_labels.add('%s.png' % i)
         else:
             single_match = SINGLE_REGEX.match(line)
             if single_match:
                 positive_labels.add('%s.png' % single_match.group())
-# TODO: do this in a diferent way! just linearly add to labels; add for gap between this
-                start and the previous end.
 
-    print 'num positive labels: %s' % positive_labels.size()
-    labels = numpy.zeros((len(images)))
+    print 'num positive labels: %s' % len(positive_labels)
+    labels = np.zeros((len(images)), dtype=np.int64)
     total_pos = 0
     for i, name in enumerate(filenames):
         if name in positive_labels:
             labels[i] = 1
             total_pos += 1
-    print 'positive labels added (should be same as above!!): %s' % positive_labels.size()
+    print 'positive labels added (should be same as above!!): %s' % len(positive_labels)
+    print labels.shape
+    print labels
+    print type(labels)
 
-    return numpy.array(images), labels
+    return np.array(images), labels
 
+def grouper(n, iterable, fillvalue=None):
+    '''grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx'''
+    args = [iter(iterable)] * n
+    return it.izip_longest(fillvalue=fillvalue, *args)
+
+def mosaic(w, imgs):
+    '''Make a grid from images.
+
+    w    -- number of grid columns
+    imgs -- images (must have same size and format)
+
+    Taken from https://github.com/Itseez/opencv/blob/master/samples/python2/common.py
+    '''
+    imgs = iter(imgs)
+    img0 = imgs.next()
+    pad = np.zeros_like(img0)
+    imgs = it.chain([img0], imgs)
+    rows = grouper(w, imgs, pad)
+    return np.vstack(map(np.hstack, rows))
+
+# TODO: Kay doesn't know what this does (also it's set to use the size of the digits image)
+# so I commented out the part of code that uses it.
 def deskew(img):
     m = cv2.moments(img)
     if abs(m['mu02']) < 1e-2:
@@ -119,7 +141,9 @@ class SVM(StatModel):
         self.model.train(samples, responses, params = self.params)
 
     def predict(self, samples):
-        return self.model.predict_all(samples).ravel()
+        return [self.model.predict(sample) for sample in samples]
+        # Kay: for some reason predict_all isn't in the version of cv2 on this machine.
+        #return self.model.predict_all(samples).ravel()
 
 
 def evaluate_model(model, images, samples, labels):
@@ -172,7 +196,7 @@ def preprocess_hog(images):
 if __name__ == '__main__':
     print __doc__
 
-    images, labels = load_training(DIGITS_FN)
+    images, labels = load_training()
 
     print 'preprocessing...'
     # shuffle images
@@ -180,27 +204,29 @@ if __name__ == '__main__':
     shuffle = rand.permutation(len(images))
     images, labels = images[shuffle], labels[shuffle]
 
-    images2 = map(deskew, images)
+    images2 = images # map(deskew, images)
     samples = preprocess_hog(images2)
 
     train_n = int(0.9*len(samples))
-    cv2.imshow('test set', mosaic(25, images[train_n:]))
+    # cv2.imshow('test set', mosaic(25, images[train_n:]))
     images_train, images_test = np.split(images2, [train_n])
     samples_train, samples_test = np.split(samples, [train_n])
     labels_train, labels_test = np.split(labels, [train_n])
-
+    print labels_train
 
     print 'training KNearest...'
     model = KNearest(k=4)
+    print samples_train.shape
+    print labels_train.shape
     model.train(samples_train, labels_train)
     vis = evaluate_model(model, images_test, samples_test, labels_test)
-    cv2.imshow('KNearest test', vis)
+    # cv2.imshow('KNearest test', vis)
 
     print 'training SVM...'
     model = SVM(C=2.67, gamma=5.383)
     model.train(samples_train, labels_train)
     vis = evaluate_model(model, images_test, samples_test, labels_test)
-    cv2.imshow('SVM test', vis)
+    #cv2.imshow('SVM test', vis)
     print 'saving SVM as "images_svm.dat"...'
     model.save('images_svm.dat')
 
