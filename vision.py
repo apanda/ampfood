@@ -3,15 +3,11 @@ VM and KNearest digit recognition.
 
 Borrowed from the sample file here: https://github.com/Itseez/opencv/blob/master/samples/python2/digits.py and modified for our purposes.
 
-Sample loads a dataset of handwritten digits from 'digits.png'.
+Sample loads a dataset of kitchen food images.
 Then it trains a SVM and KNearest classifiers on it and evaluates
 their accuracy.
 
 Following preprocessing is applied to the dataset:
- - Moment-based image deskew (see deskew())
- - Digit images are split into 4 10x10 cells and 16-bin
-   histogram of oriented gradients is computed for each
-   cell
  - Transform histograms to space with Hellinger metric (see [1] (RootSIFT))
 
 
@@ -20,7 +16,7 @@ Following preprocessing is applied to the dataset:
     http://www.robots.ox.ac.uk/~vgg/publications/2012/Arandjelovic12/arandjelovic12.pdf
 
 Usage:
-   digits.py
+   vision.py
 '''
 
 # built-in modules
