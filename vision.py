@@ -30,6 +30,7 @@ import cv2
 
 import numpy as np
 from numpy.linalg import norm
+import os
 
 # local modules
 from common import clock, mosaic
@@ -37,25 +38,45 @@ from common import clock, mosaic
 SZ = 20 # size of each digit is SZ x SZ
 CLASS_N = 10
 DIGITS_FN = 'data/digits.png'
+TRAINING_DIR = '/mnt/images/training'
+LABELS = '/mnt/images/labeled_uptp1386267400'
 
-def split2d(img, cell_size, flatten=True):
-    h, w = img.shape[:2]
-    sx, sy = cell_size
-    cells = [np.hsplit(row, w//sx) for row in np.vsplit(img, h//sy)]
-    cells = np.array(cells)
-    if flatten:
-        # keeps the original first dimension
-        cells = cells.reshape(-1, sy, sx)
-    return cells
+def load_training(training_dir):
+    print 'loading files from "%s" ...' % training_dir
+    filenames = os.listdir(TRAINING_DIR)
 
-# this is specific to the digits thing -- it splits the images into a bunch of
-# little blocks.
-def load_digits(fn):
-    print 'loading "%s" ...' % fn
-    digits_img = cv2.imread(fn, 0)
-    digits = split2d(digits_img, (SZ, SZ))
-    labels = np.repeat(np.arange(CLASS_N), len(digits)/CLASS_N)
-    return digits, labels
+    full_filenames = [os.path.join(TRAINING_DIR, f) for f in filenames]
+    # the second parameter of imread tells it to read the image in grayscale
+    images = [cv2.imread(f, 0) for f in full_filenames if os.path.isfile(f)]
+    print 'found %d image files' % len(images)
+
+    positive_labels = set()
+    RANGE_REGEX = re.compile('(\d*) - (\d*)')
+    SINGLE_REGEX = re.compile('\d*')
+    for line in open(LABELS, 'r'):
+        match = RANGE_REGEX.match(line)
+        if match:
+            start = match.group(1)
+            end = match.group(2)
+            for i in range(start, end + 1):
+                positive_labels.add('%s.png' % i)
+        else:
+            single_match = SINGLE_REGEX.match(line)
+            if single_match:
+                positive_labels.add('%s.png' % single_match.group())
+# TODO: do this in a diferent way! just linearly add to labels; add for gap between this
+                start and the previous end.
+
+    print 'num positive labels: %s' % positive_labels.size()
+    labels = numpy.zeros((len(images)))
+    total_pos = 0
+    for i, name in enumerate(filenames):
+        if name in positive_labels:
+            labels[i] = 1
+            total_pos += 1
+    print 'positive labels added (should be same as above!!): %s' % positive_labels.size()
+
+    return numpy.array(images), labels
 
 def deskew(img):
     m = cv2.moments(img)
@@ -101,7 +122,7 @@ class SVM(StatModel):
         return self.model.predict_all(samples).ravel()
 
 
-def evaluate_model(model, digits, samples, labels):
+def evaluate_model(model, images, samples, labels):
     resp = model.predict(samples)
     err = (labels != resp).mean()
     print 'error: %.2f %%' % (err*100)
@@ -114,19 +135,19 @@ def evaluate_model(model, digits, samples, labels):
     print
 
     vis = []
-    for img, flag in zip(digits, resp == labels):
+    for img, flag in zip(images, resp == labels):
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
         if not flag:
             img[...,:2] = 0
         vis.append(img)
     return mosaic(25, vis)
 
-def preprocess_simple(digits):
-    return np.float32(digits).reshape(-1, SZ*SZ) / 255.0
+def preprocess_simple(images):
+    return np.float32(images).reshape(-1, SZ*SZ) / 255.0
 
-def preprocess_hog(digits):
+def preprocess_hog(images):
     samples = []
-    for img in digits:
+    for img in images:
         # Do edge detection.
         gx = cv2.Sobel(img, cv2.CV_32F, 1, 0)
         gy = cv2.Sobel(img, cv2.CV_32F, 0, 1)
@@ -151,20 +172,20 @@ def preprocess_hog(digits):
 if __name__ == '__main__':
     print __doc__
 
-    digits, labels = load_digits(DIGITS_FN)
+    images, labels = load_training(DIGITS_FN)
 
     print 'preprocessing...'
-    # shuffle digits
+    # shuffle images
     rand = np.random.RandomState(321)
-    shuffle = rand.permutation(len(digits))
-    digits, labels = digits[shuffle], labels[shuffle]
+    shuffle = rand.permutation(len(images))
+    images, labels = images[shuffle], labels[shuffle]
 
-    digits2 = map(deskew, digits)
-    samples = preprocess_hog(digits2)
+    images2 = map(deskew, images)
+    samples = preprocess_hog(images2)
 
     train_n = int(0.9*len(samples))
-    cv2.imshow('test set', mosaic(25, digits[train_n:]))
-    digits_train, digits_test = np.split(digits2, [train_n])
+    cv2.imshow('test set', mosaic(25, images[train_n:]))
+    images_train, images_test = np.split(images2, [train_n])
     samples_train, samples_test = np.split(samples, [train_n])
     labels_train, labels_test = np.split(labels, [train_n])
 
@@ -172,15 +193,15 @@ if __name__ == '__main__':
     print 'training KNearest...'
     model = KNearest(k=4)
     model.train(samples_train, labels_train)
-    vis = evaluate_model(model, digits_test, samples_test, labels_test)
+    vis = evaluate_model(model, images_test, samples_test, labels_test)
     cv2.imshow('KNearest test', vis)
 
     print 'training SVM...'
     model = SVM(C=2.67, gamma=5.383)
     model.train(samples_train, labels_train)
-    vis = evaluate_model(model, digits_test, samples_test, labels_test)
+    vis = evaluate_model(model, images_test, samples_test, labels_test)
     cv2.imshow('SVM test', vis)
-    print 'saving SVM as "digits_svm.dat"...'
-    model.save('digits_svm.dat')
+    print 'saving SVM as "images_svm.dat"...'
+    model.save('images_svm.dat')
 
     cv2.waitKey(0)
