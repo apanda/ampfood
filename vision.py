@@ -203,7 +203,7 @@ if __name__ == '__main__':
     images2 = images # map(deskew, images)
     samples = preprocess_hog(images2)
 
-    train_n = int(0.9*len(samples))
+    train_n = int(0.6*len(samples))
     # cv2.imshow('test set', mosaic(25, images[train_n:]))
     images_train, images_test = np.split(images2, [train_n])
     samples_train, samples_test = np.split(samples, [train_n])
