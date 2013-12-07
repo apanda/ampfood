@@ -94,8 +94,7 @@ def mosaic(w, imgs):
     rows = grouper(w, imgs, pad)
     return np.vstack(map(np.hstack, rows))
 
-# TODO: Kay doesn't know what this does (also it's set to use the size of the digits image)
-# so I commented out the part of code that uses it.
+# Adjust image for being skewed. We control the camera no reason it will be skewed
 def deskew(img):
     m = cv2.moments(img)
     if abs(m['mu02']) < 1e-2:
@@ -150,17 +149,18 @@ def evaluate_model(model, images, samples, labels):
     confusion = np.zeros((10, 10), np.int32)
     for i, j in zip(labels, resp):
         confusion[i, j] += 1
-    print 'confusion matrix:'
-    print confusion
-    print
+    return err
+    #print 'confusion matrix:'
+    #print confusion
+    #print
 
-    vis = []
-    for img, flag in zip(images, resp == labels):
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        if not flag:
-            img[...,:2] = 0
-        vis.append(img)
-    return mosaic(25, vis)
+    #vis = []
+    #for img, flag in zip(images, resp == labels):
+    #    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    #    if not flag:
+    #        img[...,:2] = 0
+    #    vis.append(img)
+    #return mosaic(25, vis)
 
 def preprocess_simple(images):
     return np.float32(images).reshape(-1, SZ*SZ) / 255.0
@@ -219,9 +219,17 @@ if __name__ == '__main__':
     # cv2.imshow('KNearest test', vis)
 
     print 'training SVM...'
-    model = SVM(C=2.67, gamma=5.383)
-    model.train(samples_train, labels_train)
-    vis = evaluate_model(model, images_test, samples_test, labels_test)
+    possible_C = [100.0, 10.0, 1.0, 0.1, 0.01, 0.001, 0.0001]
+    min_C = possible_C[0]
+    min_C_val = float('inf')
+    for c in possible_C:
+        model = SVM(C=c, gamma=5.383)
+        model.train(samples_train, labels_train)
+        err = evaluate_model(model, images_test, samples_test, labels_test)
+        if err < min_C_val:
+            min_C_val = err
+            min_C = c
+            print "Changing C to %f"%(c)
     #cv2.imshow('SVM test', vis)
     print 'saving SVM as "images_svm.dat"...'
     model.save('images_svm.dat')
