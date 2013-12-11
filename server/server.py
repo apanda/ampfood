@@ -35,6 +35,7 @@ def ReadThread (delay):
        global imbuf
        global imbuf_lock
        global imfname
+       global imlabel
        global label_file
        global svm_lock
        global svm
@@ -89,8 +90,9 @@ def latest_page ():
 
 @app.route('/correct/<name>')
 def update_file (name):
-   with update_lock:
-       print >>update_file, name
+   
+    with update_lock:
+        print >>update_file, name
 
 @app.route('/reload')
 def reload_svm ():
