@@ -5,9 +5,14 @@ from StringIO import StringIO
 from PIL import Image
 import threading
 import time
+from svm_funcs import *  
 imbuf = None
 imfname = None
+imlabel = None
 imbuf_lock = threading.Lock()
+svm = None
+svm_lock = threading.Lock()
+SVM_FILE = "SVM_MODEL"
 def ReadThread (delay):
    def ReadFunc ():
        c = curl.Curl('http://128.32.132.63:5000/image')
@@ -25,13 +30,17 @@ def ReadThread (delay):
        with imbuf_lock:
            imbuf = imbuf_new.getvalue()
            imfname = curtime
+           with svm_lock:
+               imlabel = RunDumbDetector (imbuf, svm) 
    def ReadLoop ():
        while True:
            try:
                ReadFunc()
            except:
                pass
-           time.sleep(delay)
+           time.sleep(delay) 
+   with svm_lock:
+       svm = LoadSVM(SVM_FILE) 
    try:
       ReadFunc()
    except:
@@ -59,10 +68,12 @@ def latest_page ():
     global imbuf_lock
     global imfname
     fname = None
+    label = None
     with imbuf_lock:
         fname = imfname
+        label = imlabel
     print fname
-    return render_template('latest.html', fname=fname)
+    return render_template('latest.html', fname=fname, label="Food" if label != 0.0 else "No Food")
 
 def Boot ():
     ReadThread(120.0)

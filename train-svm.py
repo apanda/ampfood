@@ -12,7 +12,7 @@ def TrainDumbImages ():
     labels = []
     for k, v in tags.iteritems():
         try:
-            images.append(cv2.imread(k, 0).flatten())
+            images.append(cv2.imread(k, cv2.CV_LOAD_IMAGE_GRAYSCALE).flatten())
             labels.append([0 if v == '-' else 1])
         except:
             print "Failed on %s"%(k)
@@ -32,7 +32,7 @@ def TestDumbImages():
     imgatidx = []
     for k, v in tags.iteritems():
         imgatidx.append(k)
-        images.append(cv2.imread(k, 0).flatten())
+        images.append(cv2.imread(k, cv2.CV_LOAD_IMAGE_GRAYSCALE).flatten())
         labels.append([0 if v == '-' else 1])
     images = np.float32(images)
     labels = np.float32(labels)
@@ -85,7 +85,7 @@ def TrainHogImages ():
     done = 0
     for k, v in tags.iteritems():
         try:
-            im = cv2.imread(k, 0)
+            im = cv2.imread(k, cv2.CV_LOAD_IMAGE_GRAYSCALE)
             #features = hog.compute(im).reshape(-1)
             features = ComputeHog (im)
             done += 1
@@ -117,7 +117,7 @@ def TestHogImages():
     done = 0
     for k, v in tags.iteritems():
         imgatidx.append(k)
-        im = cv2.imread(k, 0)
+        im = cv2.imread(k, cv2.CV_LOAD_IMAGE_GRAYSCALE)
         #features = hog.compute(im).reshape(-1)
         features = ComputeHog (im)
         done += 1
