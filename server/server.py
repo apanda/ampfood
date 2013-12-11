@@ -80,6 +80,7 @@ def image (name):
 def latest_page ():
     global imbuf_lock
     global imfname
+    global imlabel
     fname = None
     label = None
     with imbuf_lock:
