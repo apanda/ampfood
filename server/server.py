@@ -17,7 +17,7 @@ SVM_FILE = "svm_model"
 update_file = open('indicate_wrong.txt', 'a+')
 update_lock = threading.Lock()
 
-def LoadSVM ():
+def ReloadSVM ():
    with svm_lock:
        svm = LoadSVM(SVM_FILE) 
 
@@ -52,7 +52,7 @@ def ReadThread (delay):
            except:
                pass
            time.sleep(delay) 
-   LoadSVM()
+   ReloadSVM()
    try:
       ReadFunc()
    except:
@@ -94,7 +94,7 @@ def update_file (name):
 
 @app.route('/reload')
 def reload_svm ():
-    LoadSVM ()
+    ReloadSVM ()
 
 def Boot ():
     ReadThread(120.0)
