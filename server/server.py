@@ -9,10 +9,18 @@ from svm_funcs import *
 imbuf = None
 imfname = None
 imlabel = None
+label_file = open('server_labels.txt', 'a+')
 imbuf_lock = threading.Lock()
 svm = None
 svm_lock = threading.Lock()
-SVM_FILE = "SVM_MODEL"
+SVM_FILE = "svm_model"
+update_file = open('indicate_wrong.txt', 'a+')
+update_lock = threading.Lock()
+
+def LoadSVM ():
+   with svm_lock:
+       svm = LoadSVM(SVM_FILE) 
+
 def ReadThread (delay):
    def ReadFunc ():
        c = curl.Curl('http://128.32.132.63:5000/image')
@@ -27,11 +35,16 @@ def ReadThread (delay):
        global imbuf
        global imbuf_lock
        global imfname
+       global label_file
+       global svm_lock
+       global svm
        with imbuf_lock:
            imbuf = imbuf_new.getvalue()
            imfname = curtime
            with svm_lock:
                imlabel = RunDumbDetector (imbuf, svm) 
+               print >>label_file, "%s %f"%(imfname, imlabel)
+               label_file.flush()
    def ReadLoop ():
        while True:
            try:
@@ -39,8 +52,7 @@ def ReadThread (delay):
            except:
                pass
            time.sleep(delay) 
-   with svm_lock:
-       svm = LoadSVM(SVM_FILE) 
+   LoadSVM()
    try:
       ReadFunc()
    except:
@@ -74,6 +86,15 @@ def latest_page ():
         label = imlabel
     print fname
     return render_template('latest.html', fname=fname, label="Food" if label != 0.0 else "No Food")
+
+@app.route('/correct/<name>')
+def update_file (name):
+   with update_lock:
+       print >>update_file, name
+
+@app.route('/reload')
+def reload_svm ():
+    LoadSVM ()
 
 def Boot ():
     ReadThread(120.0)
