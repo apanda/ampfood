@@ -4,7 +4,7 @@ import sys
 import math
 import random
 from shutil import copy2
-if len(sys.argv) != 8:
+if len(sys.argv) != 6:
     print >>sys.stderr, "%s food object empty validation_target gtruth"%(sys.argv[0])
     sys.exit(1)
 food_dir = sys.argv[1]

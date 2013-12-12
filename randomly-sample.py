@@ -20,7 +20,7 @@ for root, dirs, files in walk(food_dir):
    files = list(files)
    files = filter(lambda s: s.endswith('.png'), files)
    nfiles = len(files)
-   sample_size = int(math.floor(0.5 * float(nfiles)))
+   sample_size = int(math.floor(0.33 * float(nfiles)))
    print "Found a total of %d food files sampling %d"%(nfiles, sample_size)
    sample = random.sample(files, sample_size) 
    for s in sample:

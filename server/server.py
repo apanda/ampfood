@@ -1,4 +1,4 @@
-from flask import Flask, make_response, send_file, render_template
+from flask import Flask, make_response, send_file, render_template, redirect, url_for
 app = Flask(__name__)
 import curl
 from StringIO import StringIO
@@ -18,6 +18,8 @@ update_file = open('indicate_wrong.txt', 'a+')
 update_lock = threading.Lock()
 
 def ReloadSVM ():
+   global svm_lock
+   global svm
    with svm_lock:
        svm = LoadSVM(SVM_FILE) 
 
@@ -44,6 +46,7 @@ def ReadThread (delay):
            imfname = curtime
            with svm_lock:
                imlabel = RunDumbDetector (imbuf, svm) 
+               print imlabel
                print >>label_file, "%s %f"%(imfname, imlabel)
                label_file.flush()
    def ReadLoop ():
@@ -87,18 +90,25 @@ def latest_page ():
         fname = imfname
         label = imlabel
     print fname
+    print "Label reported as %f"%(label)
     return render_template('latest.html', fname=fname, label="Food" if label != 0.0 else "No Food")
 
 @app.route('/correct/<name>')
-def update_file (name):
-   
+def correct_img (name):
+    global update_lock
+    global update_file
     with update_lock:
+        print "Updating"
         print >>update_file, name
+        update_file.flush()
+    return redirect(url_for('latest_page'))
 
 @app.route('/reload')
 def reload_svm ():
     ReloadSVM ()
+    return "Reloaded"
 
+@app.route('/boot')
 def Boot ():
     ReadThread(120.0)
     return "Booted"
