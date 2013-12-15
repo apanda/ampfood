@@ -1,0 +1,30 @@
+\documentclass[10pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm,color}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{enumerate}
+
+% Set no indentation
+\setlength\parindent{0pt}
+\input{latex_header}
+
+\newcommand{\panda}[1]{{\color{ForestGreen}\bf AP: {#1}}}
+\newcommand{\colin}[1]{{\color{red}\bf CS: {#1}}}
+\newcommand{\scott}[1]{{\color{blue}\bf SS: {#1}}}
+\newcommand{\teemu}[1]{{\color{purple}\bf TK: {#1}}}
+\newcommand{\ali}[1]{{\color{orange}\bf AG: {#1}}}
+
+\begin{document}
+\title{AMPFood}
+\author{Kay Ousterhout (19487260)\hspace{2in}Aurojit Panda (23273001)}
+\date{}
+\maketitle
+\input{intro}
+\input{pipeline}
+\input{results}
+\input{discussion}
+\bibliographystyle{is-plain} \bibliography{bib}
+\end{document}

@@ -1,0 +1,18 @@
+\section{Results}
+For all these results we used $400$ images for training of which a $\frac{1}{3}^{rd}$ each contained food, a
+$\frac{1}{3}^{rd}$ contained other objects and the rest were pictures of the empty table. The training data was picked
+at random from the set of photos collected in the first four days. To validate our choices we then used the trained SVMs
+on $5000$ test images. 
+
+\subsection{Raw Images}
+The SVM using raw images misclassified $862$ of the $5000$ images (a $17.24\%$ failure rate). The failures involved both
+false positives and false negatives.
+
+\subsection{Shi-Tomassi Vectors}
+The SVM using raw images misclassified $77$ of the $5000$ images (a $1.54\%$ failure rate). The failures involved both
+false positives and false negatives.
+
+\subsection{HOG Vectors}
+Using HOG vectors all images were misclassified as containing no food. 
+
+Next we discuss some reasons for our results.

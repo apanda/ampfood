@@ -1,0 +1,27 @@
+\section{Discussion}
+Much of our accuracy can be attributed to environmental features. In particular the table is in a fixed position, all
+food on the table is acquired from a few restaurants and somehow people tend to place boxes in the same position on the
+table. As a result the problem is highly constrained and provided sufficient input data the SVM can achieve high
+accuracy.
+
+However there is the issue of why HOG vectors do not work. Based on the images in
+Figure~\ref{fig:food-hog},~\ref{fig:other-hog} it appears that HOG does not produce sufficiently different feature
+vectors for cases where the table contains food or any other object. Part of the problem is that our camera position
+limits the amount of depth information that can be captured and hence both boxes and flat objects look roughly
+identical.
+
+While using just edges from the whole image works well for the binary classification problem, we would eventually like
+to be able to classify both the kind of food and the amount which might require other features.
+
+
+\section{Future Work}
+In future work, we plan to add detection of the rate at which the food is being consumed.
+This would allow us to email users with an extra alert when food is being consumed quickly:
+``come quickly, the food won't be around for long!''.  We also would like to make the detection
+more sophisticated in the event that more food is added to the table.  Currently, we 
+only inform users when the table's state changes from not having food to having food.
+However, there are sometimes cases when bad food lingers on the table for a while, and in the
+meantime, new food is added.  We'd like to improve the algorithm to send alerts in this case
+as well. One final area of future work is detecting the type of food on the table. Lunches
+from Gregoire are, for example, far more appealing to most graduate students than leftover salad,
+and it would be useful if this information were included in emails.

@@ -1,0 +1,15 @@
+\section{Introduction}
+The importance of free food in the life of a graduate student is a common motif in popular culture. In the real world,
+students in the $4^{th}$ floor of Soda Hall spend a small portion of their afternoon polling the kitchen for lunch. In
+this project we attempted to use computer vision to minimize research productivity lost when polling the kitchen.
+Broadly our idea was to install a camera in the RADLab kitchen (feed available at
+\url{http://radlab.cs.berkeley.edu/foodcam}) and use the images acquired to train a SVM that could label pictures as
+either containing food or not containing food. 
+
+The RADLab kitchen did not previously provide any video feed and did not provide an easy way to access a stream of
+images. As a result we had the freedom to design both the image acquisition and recognition pipeline for this project.
+As we show below carefully selecting the camera viewpoint greatly improved our recognition accuracy. Furthermore
+selecting the camera viewpoint is practical in problems similar to ours (where the aim is to recognize the presence of
+an item on a fixed target). 
+
+We next describe different parts of our processing pipeline.

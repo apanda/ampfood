@@ -1,0 +1,91 @@
+%!TEX root = paper.tex
+
+\pdfminorversion=4
+\usepackage{epsfig,endnotes}
+\usepackage{subfigure,graphics,times,color,cite,xspace,multirow,rotating}
+\usepackage[hyphens]{url}
+\usepackage[linesnumbered,figure,commentsnumbered]{algorithm2e}
+\usepackage[small,compact]{titlesec}
+\usepackage{microtype,caption}
+\usepackage{bbding}
+\usepackage{datetime}
+\usepackage[pdftex]{thumbpdf}
+\usepackage{fullpage}
+%\usepackage[dvips]{graphicx}            % to include images
+%\usepackage{pslatex}	    % to use PostScript fonts
+\hyphenpenalty=5000
+\tolerance=1000
+
+%don't want date printed
+\date{}
+
+%\SetWatermarkFontSize{2cm}
+%\SetWatermarkText{TEST}
+
+% Get rid of additional authors section (tkoponen)
+
+\newcommand\eat[1]{}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hyperref stuff
+\usepackage[breaklinks=true,filecolor=black,citecolor=black,urlcolor=black,linkcolor=black,colorlinks,pdfpagelabels,pdfpagelayout=Single]{hyperref}
+\hypersetup{
+pdfauthor = { },
+pdftitle = { },
+pdfsubject = { },
+pdfkeywords = {}
+}
+
+%\usepackage{backref}
+\usepackage{breakurl}
+%\renewcommand{\url}{\burl}
+\urlstyle{same}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Compact itemize and enumerate.  Note that they use the same counters and
+% symbols as the usual itemize and enumerate environments.
+\def\compactify{\itemsep=-1pt \topsep=3pt \partopsep=0pt \parsep=3pt}
+\let\latexusecounter=\usecounter
+\newenvironment{CompactItemize}
+  {\def\usecounter{\compactify\latexusecounter}
+   \begin{itemize}}
+  {\end{itemize}\let\usecounter=\latexusecounter}
+\newenvironment{CompactEnumerate}
+  {\def\usecounter{\compactify\latexusecounter}
+   \begin{enumerate}}
+  {\end{enumerate}\let\usecounter=\latexusecounter}
+
+\newcommand{\bci}{\begin{CompactItemize}\addtolength{\itemsep}{-0.075in}}
+\newcommand{\eci}{\end{CompactItemize}}
+\newcommand{\bce}{\begin{CompactEnumerate}}
+\newcommand{\ece}{\end{CompactEnumerate}}
+
+\newcommand{\eg}{{\it e.g.},\xspace}
+\newcommand{\ie}{{\it i.e.},\xspace}
+
+% space between captions and text
+\textfloatsep 10pt
+%\titlespacing{\section}{0pt}{2ex}{1ex}
+%\titlespacing{\subsection}{0pt}{1ex}{0ex}
+%\titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+
+%\pagestyle{plain}
+%\setcounter{page}{1}
+
+\setlength{\abovecaptionskip}{2pt}
+\setlength{\belowcaptionskip}{0pt}
+
+% Set pdfTeX parameters for pdf mode (replacing pdftex.cfg file).
+% Thomas Esser, 2004. public domain.
+\pdfoutput=1
+\pdfcompresslevel=9
+\pdfdecimaldigits=3
+% Letter settings
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+\pdfhorigin=1 true in
+\pdfvorigin=1 true in
+\pdfpkresolution=600
+\pdfoptionpdfminorversion=4
